@@ -76,11 +76,32 @@ export default function Upload() {
       });
 
       if (response.ok) {
-        const responseData = await response.json();
-        toast({
-          title: "Template Generation Started!",
-          description: `Job ID: ${responseData.job_id}. Processing your request...`,
-        });
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          // Job started response
+          const responseData = await response.json();
+          toast({
+            title: "Template Generation Started!",
+            description: `Job ID: ${responseData.job_id}. Processing your request...`,
+          });
+        } else {
+          // File download response
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `template_${formData.ticketNumber || 'export'}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          toast({
+            title: "Template Downloaded!",
+            description: "Your Excel template has been downloaded successfully.",
+          });
+        }
         
         // Reset form
         setSelectedFile(undefined);
