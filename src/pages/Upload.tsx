@@ -55,23 +55,53 @@ export default function Upload() {
 
     setIsProcessing(true);
     
-    // Simulate processing time
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', selectedFile);
+
+      const requestData = {
+        plrm_ticket_number: formData.ticketNumber,
+        contract_start_date: formData.contractDate,
+        contract_end_date: formData.expiryDate,
+        amendment_number: "",
+        surcharge_codes: [],
+        webhook_url: "http://localhost:5000/webhook"
+      };
+
+      formDataToSend.append('request', JSON.stringify(requestData));
+
+      const response = await fetch('http://127.0.0.1:8000/generate-template', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        toast({
+          title: "Template Generation Started!",
+          description: `Job ID: ${responseData.job_id}. Processing your request...`,
+        });
+        
+        // Reset form
+        setSelectedFile(undefined);
+        setFormData({
+          ticketNumber: "",
+          contractDate: "",
+          expiryDate: "",
+          notes: ""
+        });
+      } else {
+        throw new Error('Failed to generate template');
+      }
+    } catch (error) {
       toast({
-        title: "Template Generated!",
-        description: "Your Excel template is ready for download",
+        title: "Generation Failed",
+        description: "Failed to start template generation. Please try again.",
+        variant: "destructive"
       });
-      
-      // Reset form
-      setSelectedFile(undefined);
-      setFormData({
-        ticketNumber: "",
-        contractDate: "",
-        expiryDate: "",
-        notes: ""
-      });
-    }, 3000);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
