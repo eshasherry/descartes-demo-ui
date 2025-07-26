@@ -59,7 +59,7 @@ export function Sidebar() {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <h1 className="text-lg font-semibold text-foreground">
-                DocProcessor
+                AI Powered Document Processor
               </h1>
             </div>
           </div>
